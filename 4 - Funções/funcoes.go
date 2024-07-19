@@ -1,9 +1,37 @@
 package main
 
-impor(
+import(
 	"fmt"
 )
 
-func somar(n1 int8, n2 int8) int {
+func somar(n1 int8, n2 int8) int8 {
 	return n1 + n2
+}
+
+func calculaosMatematicos(n1, n2 int8) (int8, int8) {
+	soma := n1 + n2
+	subtracao := n1 - n2
+	return soma, subtracao
+}
+
+func main()  {
+	soma := somar(10,20)
+	fmt.Println(soma)
+
+	var f = func(txt string) string {
+		fmt.Println(txt)
+		return txt
+	}
+
+	resultado := f("Texto da função 1")
+	fmt.Println(resultado)
+
+	resultadoSoma, resultadoSubtracao := calculaosMatematicos(10, 15)
+	fmt.Println(resultadoSoma, resultadoSubtracao)
+
+	resultadoSoma1, _ := calculaosMatematicos(10, 15)
+	fmt.Println(resultadoSoma1)
+
+	_, resultadoSubtracao1 := calculaosMatematicos(10, 15)
+	fmt.Println(resultadoSubtracao1)
 }
