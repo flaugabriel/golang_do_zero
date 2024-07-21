@@ -4,6 +4,7 @@ import(
 	"fmt"
 )
 
+// no switch não tem brake ele já sai altomaticamente
 func main() {
 
 	dia := diaDaSemana(3)

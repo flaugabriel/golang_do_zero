@@ -14,8 +14,12 @@ func main(){
 		fmt.Println("menor ou igual a 15")
 	}
 
-	// if init
+	// if init: variável criada para o if não pode ser utilizada fora.
 	if outroNumero := numero; outroNumero > 0 {
 		fmt.Println("número é maior que zero")
-	} 
+	} else if numero < 10 {
+		fmt.Println("N~u")
+	} else {
+		fmt.Println("Entre 0 e -10")
+	}
 }
