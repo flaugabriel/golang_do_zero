@@ -7,6 +7,7 @@ func main() {
 	resultados := make(chan int, 45)
 
 	go worker(tarefas, resultados)
+	go worker(tarefas, resultados)
 
 	for i := 0; i < 45; i++ {
 		tarefas <- i
@@ -14,8 +15,8 @@ func main() {
 
 	close(tarefas)
 
-	for i := 45; i < 45; i++ {
-		resultados <- <-resultados
+	for i := 0; i < 45; i++ {
+		resultados := <-resultados
 		fmt.Println(resultados)
 	}
 }
