@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgx/v5" // driver de conexão com o Postgres
 
 	"api/src/modelos"
+
 )
 
 type Usuarios struct {
@@ -58,4 +59,27 @@ func (repositorio Usuarios) Buscar(nomeOuNick string) ([]modelos.Usuario, error)
 	}
 
 	return usuarios, nil
+}
+
+func (repositorio Usuarios) BuscarPorID(id uint64) (modelos.Usuario, error) {
+	linhas, err := repositorio.db.Query(
+		context.Background(),
+		"SELECT id, nome, nick, email, criado_em FROM usuarios WHERE id = $1",
+		id,
+	)
+
+	if err != nil {
+		return modelos.Usuario{}, err
+	}
+	defer linhas.Close()
+
+	var usuario modelos.Usuario
+
+	if linhas.Next() {
+		if erro := linhas.Scan(&usuario.ID, &usuario.Nome, &usuario.Nick, &usuario.Email, &usuario.CriadoEm); erro != nil {
+			return modelos.Usuario{}, erro
+		}
+	}
+
+	return usuario, nil
 }

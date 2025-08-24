@@ -5,13 +5,15 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
+
+	"github.com/gorilla/mux"
 
 	"api/src/banco"
 	"api/src/modelos"
 	"api/src/repositorios"
 	"api/src/respostas"
-
 )
 
 // Criar um novo usuário
@@ -91,6 +93,29 @@ func DeletarUsuario(w http.ResponseWriter, r *http.Request) {
 
 // Buscar um usuário
 func BuscarUsuario(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Detalhes do usuário"))
-	// Lógica para buscar um usuário específico
+	parametros := mux.Vars(r)
+
+	usuarioId, erro := strconv.ParseUint(parametros["usuarioId"], 10, 64)
+
+	if erro != nil {
+		respostas.Erro(w, http.StatusBadRequest, erro)
+		return
+	}
+
+	db, erro := banco.Conectar()
+
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+
+	defer db.Close(context.Background())
+	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+	usuario, erro := repositorio.BuscarPorID(usuarioId)
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+
+	respostas.JSON(w, http.StatusOK, usuario)
 }
