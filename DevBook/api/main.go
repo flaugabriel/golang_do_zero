@@ -5,12 +5,15 @@ import (
 	"log"
 	"net/http"
 
+	"api/src/config"
 	"api/src/router"
 
 )
 
 func main() {
+	config.Carregar()
+	fmt.Println("localhost:" + config.WebPort)
 	fmt.Println("Rodando API")
-	router := router.GerarRotas()
-	log.Fatal(http.ListenAndServe(":5000", router))
+	r := router.GerarRotas()
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", config.WebPort), r))
 }
