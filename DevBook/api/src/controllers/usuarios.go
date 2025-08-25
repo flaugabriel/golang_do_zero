@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -31,7 +32,7 @@ func CriarUsuario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if erro = usuario.Prepara(); erro != nil {
+	if erro = usuario.Prepara("cadastro"); erro != nil {
 		respostas.Erro(w, http.StatusBadRequest, erro)
 		return
 	}
@@ -76,19 +77,79 @@ func BuscarUsuarios(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fmt.Println("Usuários encontrados:", usuarios)
+
 	respostas.JSON(w, http.StatusOK, usuarios)
 }
 
 // Atualizar um usuário
 func AtualizarUsuario(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Usuário atualizado com sucesso"))
-	// Lógica para atualizar um usuário
+	parametros := mux.Vars(r)
+	usuarioId, erro := strconv.ParseUint(parametros["usuarioId"], 10, 64)
+
+	if erro != nil {
+		respostas.Erro(w, http.StatusBadRequest, erro)
+		return
+	}
+
+	corpoRequisicao, erro := ioutil.ReadAll(r.Body)
+	if erro != nil {
+		respostas.Erro(w, http.StatusUnprocessableEntity, erro)
+		return
+	}
+
+	var usuario modelos.Usuario
+
+	if erro = json.Unmarshal(corpoRequisicao, &usuario); erro != nil {
+		respostas.Erro(w, http.StatusBadRequest, erro)
+		return
+	}
+
+	if erro = usuario.Prepara("edição"); erro != nil {
+		respostas.Erro(w, http.StatusBadRequest, erro)
+		return
+	}
+
+	db, erro := banco.Conectar()
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+	defer db.Close(context.Background())
+
+	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+	if erro = repositorio.Atualizar(usuarioId, usuario); erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+
+	respostas.JSON(w, http.StatusOK, usuario)
 }
 
 // Deletar um usuário
 func DeletarUsuario(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Usuário deletado com sucesso"))
-	// Lógica para deletar um usuário
+	parametros := mux.Vars(r)
+	usuarioId, erro := strconv.ParseUint(parametros["usuarioId"], 10, 64)
+
+	if erro != nil {
+		respostas.Erro(w, http.StatusBadRequest, erro)
+	}
+
+	db, erro := banco.Conectar()
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+
+	defer db.Close(context.Background())
+
+	repositorios := repositorios.NovoRepositorioDeUsuarios(db)
+	if erro = repositorios.Deletar(usuarioId); erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+
+	respostas.JSON(w, http.StatusNoContent, nil)
 }
 
 // Buscar um usuário
@@ -113,9 +174,12 @@ func BuscarUsuario(w http.ResponseWriter, r *http.Request) {
 	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
 	usuario, erro := repositorio.BuscarPorID(usuarioId)
 	if erro != nil {
+		if erro.Error() == "usuário não encontrado" {
+			respostas.Erro(w, http.StatusNotFound, erro)
+			return
+		}
 		respostas.Erro(w, http.StatusInternalServerError, erro)
 		return
 	}
-
 	respostas.JSON(w, http.StatusOK, usuario)
 }

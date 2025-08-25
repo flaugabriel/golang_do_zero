@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 	"time"
+
 )
 
 // Usuario representa um usuário da aplicação
@@ -17,8 +18,8 @@ type Usuario struct {
 	AtualizadoEm time.Time `json:"atualizadoEm,omitempty"`
 }
 
-func (usuario *Usuario) Prepara() error {
-	if erro := usuario.Validar(); erro != nil {
+func (usuario *Usuario) Prepara(etapa string) error {
+	if erro := usuario.Validar(etapa); erro != nil {
 		return erro
 	}
 
@@ -26,7 +27,7 @@ func (usuario *Usuario) Prepara() error {
 	return nil
 }
 
-func (u *Usuario) Validar() error {
+func (u *Usuario) Validar(etapa string) error {
 	if u.Nome == "" {
 		return errors.New("nome é um campo obrigatório")
 	}
@@ -35,7 +36,7 @@ func (u *Usuario) Validar() error {
 		return errors.New("email é um campo obrigatório")
 	}
 
-	if u.Senha == "" {
+	if etapa == "cadastro" && u.Senha == "" {
 		return errors.New("senha é um campo obrigatório")
 	}
 

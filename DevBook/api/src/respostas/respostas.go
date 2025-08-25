@@ -4,15 +4,17 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-
 )
 
 // JSON responde com um JSON e o status HTTP
-func JSON(w http.ResponseWriter, status int, data interface{}) {
-	w.WriteHeader(status)
+func JSON(w http.ResponseWriter, statusCode int, dados interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
 
-	if erro := json.NewEncoder(w).Encode(data); erro != nil {
-		log.Fatal(erro)
+	if dados != nil {
+		if erro := json.NewEncoder(w).Encode(dados); erro != nil {
+			log.Fatal(erro)
+		}
 	}
 
 }

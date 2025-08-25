@@ -7,7 +7,6 @@ import (
 	"github.com/jackc/pgx/v5" // driver de conexão com o Postgres
 
 	"api/src/modelos"
-
 )
 
 type Usuarios struct {
@@ -82,4 +81,34 @@ func (repositorio Usuarios) BuscarPorID(id uint64) (modelos.Usuario, error) {
 	}
 
 	return usuario, nil
+}
+
+func (repositorio Usuarios) Atualizar(id uint64, usuario modelos.Usuario) error {
+	_, err := repositorio.db.Exec(
+		context.Background(),
+		"UPDATE usuarios SET nome = $1, nick = $2, email = $3 WHERE id = $4",
+		usuario.Nome, usuario.Nick, usuario.Email, id,
+	)
+
+	if err != nil {
+		return err
+	}
+	defer repositorio.db.Close(context.Background())
+
+	return nil
+}
+
+func (repositorio Usuarios) Deletar(id uint64) error {
+	_, err := repositorio.db.Exec(
+		context.Background(),
+		"DELETE FROM usuarios WHERE id = $1",
+		id,
+	)
+
+	if err != nil {
+		return err
+	}
+	defer repositorio.db.Close(context.Background())
+
+	return nil
 }
