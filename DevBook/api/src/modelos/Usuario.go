@@ -5,6 +5,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/badoux/checkmail"
+
+	"api/src/seguranca"
 )
 
 // Usuario representa um usuário da aplicação
@@ -23,7 +26,10 @@ func (usuario *Usuario) Prepara(etapa string) error {
 		return erro
 	}
 
-	usuario.Formatar()
+	if erro := usuario.Formatar(etapa); erro != nil {
+		return erro
+	}
+
 	return nil
 }
 
@@ -43,12 +49,25 @@ func (u *Usuario) Validar(etapa string) error {
 	if u.Nick == "" {
 		return errors.New("nick é um campo obrigatório")
 	}
+
+	if error := checkmail.ValidateFormat(u.Email); error != nil {
+		return errors.New("email inválido")
+	}
 	return nil
 }
 
-func (u *Usuario) Formatar() error {
+func (u *Usuario) Formatar(etapa string) error {
 	u.Nome = strings.TrimSpace(u.Nome)
 	u.Nick = strings.TrimSpace(u.Nick)
 	u.Email = strings.TrimSpace(u.Email)
+
+	if etapa == "cadastro" {
+		senhaComHash, erro := seguranca.Hash(u.Senha)
+		if erro != nil {
+			return erro
+		}
+
+		u.Senha = string(senhaComHash)
+	}
 	return nil
 }

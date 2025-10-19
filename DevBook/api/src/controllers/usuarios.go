@@ -3,7 +3,7 @@ package controllers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -11,10 +11,12 @@ import (
 
 	"github.com/gorilla/mux"
 
+	"api/src/autenticacao"
 	"api/src/banco"
 	"api/src/modelos"
 	"api/src/repositorios"
 	"api/src/respostas"
+
 )
 
 // Criar um novo usuário
@@ -77,8 +79,6 @@ func BuscarUsuarios(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("Usuários encontrados:", usuarios)
-
 	respostas.JSON(w, http.StatusOK, usuarios)
 }
 
@@ -95,6 +95,17 @@ func AtualizarUsuario(w http.ResponseWriter, r *http.Request) {
 	corpoRequisicao, erro := ioutil.ReadAll(r.Body)
 	if erro != nil {
 		respostas.Erro(w, http.StatusUnprocessableEntity, erro)
+		return
+	}
+
+	usuarioIdNoToken, erro := autenticacao.ExtrairUsuarioID(r)
+	if erro != nil {
+		respostas.Erro(w, http.StatusUnauthorized, erro)
+		return
+	}
+
+	if usuarioId != usuarioIdNoToken {
+		respostas.Erro(w, http.StatusForbidden, errors.New("Não e possivel atualizar um usuario que não é o seu"))
 		return
 	}
 
@@ -133,6 +144,17 @@ func DeletarUsuario(w http.ResponseWriter, r *http.Request) {
 
 	if erro != nil {
 		respostas.Erro(w, http.StatusBadRequest, erro)
+	}
+
+	usuarioIdNoToken, erro := autenticacao.ExtrairUsuarioID(r)
+	if erro != nil {
+		respostas.Erro(w, http.StatusUnauthorized, erro)
+		return
+	}
+
+	if usuarioId != usuarioIdNoToken {
+		respostas.Erro(w, http.StatusForbidden, errors.New("Não é possivel deletar um usuário que não é o seu"))
+		return
 	}
 
 	db, erro := banco.Conectar()
