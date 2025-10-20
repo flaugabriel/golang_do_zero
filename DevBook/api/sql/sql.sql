@@ -22,3 +22,15 @@ CREATE TABLE seguidores (
     FOREIGN KEY (seguidor_id) REFERENCES usuarios(id) ON DELETE CASCADE
 );
 
+CREATE TABLE publicacoes (
+    it int auto_increment primary KEY
+    titulo varchar (50) not null,
+    conteudo varchar (300) not null,
+    
+    autor_id int not null,
+    FOREIGN key (autor_id)
+    REFERENCES usuarios(id)
+    on DELETE CASCADE,
+    curtidas int default 0
+    criadaEm timestamp default CURRENT_TIMESTAMP
+)
