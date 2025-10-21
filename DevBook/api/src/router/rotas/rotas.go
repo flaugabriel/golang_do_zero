@@ -6,7 +6,6 @@ import (
 	"github.com/gorilla/mux"
 
 	"api/src/middlewares"
-
 )
 
 // Rota representa uma rota da API
@@ -20,6 +19,7 @@ type Rota struct {
 func Configura(r *mux.Router) *mux.Router {
 	rotas := RotasUsuarios
 	rotas = append(rotas, RotaLogin)
+	rotas = append(rotas, rotasPublicacoes...)
 
 	for _, rota := range rotas {
 		if rota.RequerAutenticacao {
